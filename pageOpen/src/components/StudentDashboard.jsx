@@ -1,38 +1,37 @@
+
 import { Link, Outlet } from "react-router-dom";
-
-
 
 const StudentDashboard = ({ onLogout }) => {
   return (
-    <div className="flex h-screen w-screen bg-gradient-to-br from-[#dbeafe] to-[#93c5fd] text-gray-900">
+    <div className="flex h-screen w-screen bg-gradient-to-br from-[#00FF00] to-[#66FF66] text-gray-900">
       
       {/* Sidebar */}
       <div className="w-1/5 bg-white/10 backdrop-blur-lg p-6 shadow-lg rounded-r-xl">
-        <h2 className="text-3xl font-serif font-bold text-blue-900 mb-6 text-center">
+        <h2 className="text-4xl font-serif font-extrabold text-[#1b5e20] mb-8 text-center">
           📚 Library System
         </h2>
-        <nav className="space-y-4">
+        <nav className="space-y-6">
           <Link 
             to="/student-dashboard/search-books" 
-            className="block p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="block p-4 bg-[#1b5e20] text-white rounded-xl hover:bg-[#388e3c] transition-all duration-300"
           >
             🔍 Search Books
           </Link>
           <Link 
             to="/student-dashboard/profile" 
-            className="block p-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            className="block p-4 bg-[#43a047] text-white rounded-xl hover:bg-[#66bb6a] transition-all duration-300"
           >
             👤 Profile
           </Link>
-          {/* <Link 
+           {/* <Link 
             to="/student-dashboard/dues" 
-            className="block p-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
+            className="block p-4 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition-all duration-300"
           >
             💰 Check Dues
-          </Link> */}
+          </Link>  */}
           <button
             onClick={onLogout}
-            className="w-full bg-red-600 text-white p-3 rounded-lg hover:bg-red-700 transition"
+            className="w-full bg-[#d32f2f] text-white p-4 rounded-xl hover:bg-[#c62828] transition-all duration-300"
           >
             🚪 Logout
           </button>
@@ -41,7 +40,7 @@ const StudentDashboard = ({ onLogout }) => {
 
       {/* Main Content */}
       <div className="w-4/5 p-8 overflow-y-auto animate-fadeIn">
-     <Outlet />
+        <Outlet />
       </div>
     </div>
   );

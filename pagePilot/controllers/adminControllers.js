@@ -258,109 +258,109 @@ const viewUserProfile = async (req, res) => {
 
 
 
- const issueBook = async (req, res) => {
-  const { studentRollNo, isbn } = req.body;
+//  const issueBook = async (req, res) => {
+//   const { studentRollNo, isbn } = req.body;
 
-  // Check if studentRollNo or isbn is missing
-  if (!studentRollNo || !isbn) {
-    return res.status(400).json({ message: 'Student Roll Number and ISBN are required' });
-  }
+//   // Check if studentRollNo or isbn is missing
+//   if (!studentRollNo || !isbn) {
+//     return res.status(400).json({ message: 'Student Roll Number and ISBN are required' });
+//   }
 
-  console.log('Received data:', req.body);  // Debugging line to check the incoming data
+//   console.log('Received data:', req.body);  // Debugging line to check the incoming data
 
-  try {
-    // 1. Check if the student exists
-    const student = await User.findOne({ rollNo: studentRollNo });
-    if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
-    }
+//   try {
+//     // 1. Check if the student exists
+//     const student = await User.findOne({ rollNo: studentRollNo });
+//     if (!student) {
+//       return res.status(404).json({ message: 'Student not found' });
+//     }
 
-    // 2. Check if the student has any overdue books with unpaid fines
-    const overdueBooks = await Transaction.find({
-      studentRollNo,
-      returnDate: null, // Book hasn't been returned
-      dueDate: { $lt: new Date() }, // Due date is in the past
-    });
+//     // 2. Check if the student has any overdue books with unpaid fines
+//     const overdueBooks = await Transaction.find({
+//       studentRollNo,
+//       returnDate: null, // Book hasn't been returned
+//       dueDate: { $lt: new Date() }, // Due date is in the past
+//     });
 
-    // Calculate total fine
-    let totalFine = 0;
-    for (let transaction of overdueBooks) {
-      const daysOverdue = Math.ceil((new Date() - new Date(transaction.dueDate)) / (1000 * 3600 * 24)); // Calculate overdue days
-      totalFine += daysOverdue * 10; // Fine of ₹10 per day
-    }
+//     // Calculate total fine
+//     let totalFine = 0;
+//     for (let transaction of overdueBooks) {
+//       const daysOverdue = Math.ceil((new Date() - new Date(transaction.dueDate)) / (1000 * 3600 * 24)); // Calculate overdue days
+//       totalFine += daysOverdue * 10; // Fine of ₹10 per day
+//     }
 
-    // If total fine is greater than 0, block book issuance
-    if (totalFine > 0) {
-      return res.status(400).json({ message: `Student has an outstanding fine of ₹${totalFine}. Cannot issue new book.` });
-    }
+//     // If total fine is greater than 0, block book issuance
+//     if (totalFine > 0) {
+//       return res.status(400).json({ message: `Student has an outstanding fine of ₹${totalFine}. Cannot issue new book.` });
+//     }
 
-    // 3. Check if the book exists and is available
-    const book = await Book.findOne({ isbn });
-    if (!book || book.availableCopies <= 0) {
-      return res.status(404).json({ message: 'Book not available' });
-    }
+//     // 3. Check if the book exists and is available
+//     const book = await Book.findOne({ isbn });
+//     if (!book || book.availableCopies <= 0) {
+//       return res.status(404).json({ message: 'Book not available' });
+//     }
 
-    // Prevent duplicate borrow (check if the student already borrowed this book)
-    if (student.borrowedBooks.some(b => b.book.toString() === book._id.toString())) {
-      return res.status(400).json({ message: 'You already borrowed this book' });
-    }
+//     // Prevent duplicate borrow (check if the student already borrowed this book)
+//     if (student.borrowedBooks.some(b => b.book.toString() === book._id.toString())) {
+//       return res.status(400).json({ message: 'You already borrowed this book' });
+//     }
 
-    // Deduct a copy from availableCopies in the book
-    book.availableCopies -= 1;
-    await book.save();
+//     // Deduct a copy from availableCopies in the book
+//     book.availableCopies -= 1;
+//     await book.save();
 
-    // 4. Create a new transaction to record the book issuance
-    const borrowDate = new Date(); // Current date for borrowDate
-    const dueDate = new Date(borrowDate); // Copy borrowDate for dueDate
-    dueDate.setDate(borrowDate.getDate() + 14); // Adds 14 days for dueDate
+//     // 4. Create a new transaction to record the book issuance
+//     const borrowDate = new Date(); // Current date for borrowDate
+//     const dueDate = new Date(borrowDate); // Copy borrowDate for dueDate
+//     dueDate.setDate(borrowDate.getDate() + 14); // Adds 14 days for dueDate
 
-    const transaction = new Transaction({
-      studentRollNo,  // Pass studentRollNo here
-      isbn,           // Pass isbn here
-      borrowDate: borrowDate, // Use the current date for borrowDate
-      dueDate: dueDate,       // Set dueDate as 14 days after borrowDate
-    });
+//     const transaction = new Transaction({
+//       studentRollNo,  // Pass studentRollNo here
+//       isbn,           // Pass isbn here
+//       borrowDate: borrowDate, // Use the current date for borrowDate
+//       dueDate: dueDate,       // Set dueDate as 14 days after borrowDate
+//     });
 
-    await transaction.save();
+//     await transaction.save();
 
-    // Add book to student's borrowedBooks array
-    student.borrowedBooks.push({
-      book: book._id,
-      isbn,
-      borrowDate,
-      dueDate,
-    });
-    await student.save();
+//     // Add book to student's borrowedBooks array
+//     student.borrowedBooks.push({
+//       book: book._id,
+//       isbn,
+//       borrowDate,
+//       dueDate,
+//     });
+//     await student.save();
 
    
-    const emailMessage = `
-  Hello ${student.name},
+//     const emailMessage = `
+//   Hello ${student.name},
 
-  We are pleased to inform you that you have successfully borrowed the book titled "${book.title}".
+//   We are pleased to inform you that you have successfully borrowed the book titled "${book.title}".
 
-  Please ensure that you return the book by ${dueDate.toLocaleDateString()} to avoid any fines.
+//   Please ensure that you return the book by ${dueDate.toLocaleDateString()} to avoid any fines.
 
-  If you have any questions or need further assistance, feel free to reach out to us.
+//   If you have any questions or need further assistance, feel free to reach out to us.
 
-  Regards,
-  Library Team
+//   Regards,
+//   Library Team
 
-  ----------------------------------------
-  For any support, contact us at:
-  support@library.com
-`;
+//   ----------------------------------------
+//   For any support, contact us at:
+//   support@library.com
+// `;
 
-    // Send the email
-    await sendEmail(student.email, 'Book Issued - Return Within 14 Days', emailMessage);
+//     // Send the email
+//     await sendEmail(student.email, 'Book Issued - Return Within 14 Days', emailMessage);
 
-    // Respond with success
-    res.status(200).json({ message: 'Book issued successfully', transaction, assignedIsbn: isbn });
+//     // Respond with success
+//     res.status(200).json({ message: 'Book issued successfully', transaction, assignedIsbn: isbn });
 
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error issuing book', error });
-  }
- };
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Error issuing book', error });
+//   }
+//  };
 
 
  
@@ -423,75 +423,269 @@ const viewUserProfile = async (req, res) => {
 //      res.status(500).json({ message: 'Error returning book', error });
 //    }
 //  };
+
+
+const issueBook = async (req, res) => {
+  const { studentRollNo, isbn } = req.body;
+
+  // Check if studentRollNo or isbn is missing
+  if (!studentRollNo || !isbn) {
+    return res.status(400).json({ message: 'Student Roll Number and ISBN are required' });
+  }
+
+  console.log('Received data:', req.body);  // Debugging line to check the incoming data
+
+  try {
+    // 1. Check if the student exists
+    const student = await User.findOne({ rollNo: studentRollNo });
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    // 2. Check if the student has any overdue books with unpaid fines
+    const overdueBooks = await Transaction.find({
+      studentRollNo,
+      returnDate: null, // Book hasn't been returned
+      dueDate: { $lt: new Date() }, // Due date is in the past
+    });
+
+    // Calculate total fine
+    let totalFine = 0;
+    for (let transaction of overdueBooks) {
+      const daysOverdue = Math.ceil((new Date() - new Date(transaction.dueDate)) / (1000 * 3600 * 24)); // Calculate overdue days
+      totalFine += daysOverdue * 10; // Fine of ₹10 per day
+    }
+
+    // If total fine is greater than 0, block book issuance
+    if (totalFine > 0) {
+      return res.status(400).json({ message: `Student has an outstanding fine of ₹${totalFine}. Cannot issue new book.` });
+    }
+
+    // 3. Check if the book exists and is available
+    const book = await Book.findOne({ isbn });
+    if (!book || book.availableCopies <= 0) {
+      return res.status(404).json({ message: 'Book not available' });
+    }
+
+    // Prevent duplicate borrow (check if the student already borrowed this book)
+    if (student.borrowedBooks.some(b => b.book.toString() === book._id.toString())) {
+      return res.status(400).json({ message: 'You already borrowed this book' });
+    }
+
+    // Deduct a copy from availableCopies in the book
+    book.availableCopies -= 1;
+    await book.save();
+
+    // 4. Create a new transaction to record the book issuance
+    const borrowDate = new Date(); // Current date for borrowDate
+    const dueDate = new Date(borrowDate); // Copy borrowDate for dueDate
+    dueDate.setDate(borrowDate.getDate() + 14); // Adds 14 days for dueDate
+
+    const transaction = new Transaction({
+      studentRollNo,  // Pass studentRollNo here
+      isbn,           // Pass isbn here
+      borrowDate: borrowDate, // Use the current date for borrowDate
+      dueDate: dueDate,       // Set dueDate as 14 days after borrowDate
+      returnDate: null,  // Initially the book is not returned
+      fine: 0,          // Initially no fine
+    });
+    console.log('Transaction Data:', {
+      studentRollNo, 
+      isbn, 
+      borrowDate, 
+      dueDate
+    });
+
+   // Save the transaction and log the result
+try {
+  const savedTransaction = await transaction.save();
+  console.log('Transaction saved:', savedTransaction);
+} catch (error) {
+  console.error('Error saving transaction:', error);
+  return res.status(500).json({ message: 'Error saving transaction', error });
+}
+
+    // Add book to student's borrowedBooks array
+    student.borrowedBooks.push({
+      book: book._id,
+      isbn,
+      borrowDate,
+      dueDate,
+    });
+    await student.save();
+
+    const emailMessage = `
+      Hello ${student.name},
+
+      We are pleased to inform you that you have successfully borrowed the book titled "${book.title}".
+
+      Please ensure that you return the book by ${dueDate.toLocaleDateString()} to avoid any fines.
+
+      If you have any questions or need further assistance, feel free to reach out to us.
+
+      Regards,
+      Library Team
+
+      ----------------------------------------
+      For any support, contact us at:
+      support@library.com
+    `;
+
+    // Send the email
+    await sendEmail(student.email, 'Book Issued - Return Within 14 Days', emailMessage);
+
+    // Respond with success
+    res.status(200).json({ message: 'Book issued successfully', transaction, assignedIsbn: isbn });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error issuing book', error });
+  }
+};
+
+// const returnBook = async (req, res) => {
+//   try {
+//     const { rollNo, isbn } = req.body;
+
+//     console.log('Received in returnBook:', { rollNo, isbn });
+
+//     // Check if rollNo or isbn is missing
+//     if (!rollNo || !isbn) {
+//       return res.status(400).json({ message: 'RollNo and ISBN are required' });
+//     }
+
+//     // Clean the input
+//     const cleanRollNo = rollNo.trim();
+//     const cleanIsbn = isbn.trim();
+
+//     // Log what we are about to search
+//     console.log('Searching Transaction with:', {
+//       studentRollNo: cleanRollNo,
+//       isbn: cleanIsbn,
+//       returnDate: null
+//     });
+
+//     // Find the transaction (case-insensitive rollNo match)
+//     const transaction = await Transaction.findOne({ 
+//       studentRollNo: new RegExp(`^${cleanRollNo}$`, 'i'), // case-insensitive match
+//       isbn: cleanIsbn,
+//       returnDate: null
+//     });
+
+//     if (!transaction) {
+//       return res.status(404).json({ message: 'Transaction not found or book already returned' });
+//     }
+
+//     // Update the returnDate
+//     transaction.returnDate = new Date();
+
+//     // Calculate fine if overdue
+//     const today = new Date();
+//     if (today > transaction.dueDate) {
+//       const daysOverdue = Math.ceil((today - transaction.dueDate) / (1000 * 60 * 60 * 24));
+//       transaction.fine = daysOverdue * 10; // Assuming fine of ₹10 per day
+//     } else {
+//       transaction.fine = 0;
+//     }
+
+//     await transaction.save();
+//     console.log('Transaction updated (book returned):', transaction);
+
+//     // Increase availableCopies for the book
+//     const book = await Book.findOne({ isbn: cleanIsbn });
+//     if (book) {
+//       book.availableCopies += 1;
+//       await book.save();
+//     }
+
+//     // Remove the book from student's borrowedBooks
+//     const student = await User.findOne({ rollNo: new RegExp(`^${cleanRollNo}$`, 'i') });
+//     if (student) {
+//       student.borrowedBooks = student.borrowedBooks.filter(b => b.isbn !== cleanIsbn);
+//       await student.save();
+//     }
+
+//     res.status(200).json({ message: 'Book returned successfully', transaction });
+
+//   } catch (error) {
+//     console.error('Error in returnBook:', error);
+//     res.status(500).json({ message: 'Error returning book', error });
+//   }
+// };
+
 const returnBook = async (req, res) => {
   try {
     const { rollNo, isbn } = req.body;
 
-    // Validate input
+    console.log('Received in returnBook:', { rollNo, isbn });
+
+    // Check if rollNo or isbn is missing
     if (!rollNo || !isbn) {
       return res.status(400).json({ message: 'RollNo and ISBN are required' });
     }
 
-    // Find the transaction with the given rollNo and isbn that hasn't been returned
-    const transaction = await Transaction.findOne({ 
-      studentRollNo: rollNo,
-      isbn: isbn,
-      returnDate: null  // Ensures the book has not been returned already
+    // Clean the input
+    const cleanRollNo = rollNo.trim();
+    const cleanIsbn = isbn.trim();
+
+    // Log what we are about to search
+    console.log('Searching Transaction with:', {
+      studentRollNo: cleanRollNo,
+      isbn: cleanIsbn,
+      returnDate: null
     });
 
-    // If no such transaction exists, return an error
+    // Find the transaction (case-insensitive rollNo match)
+    const transaction = await Transaction.findOne({ 
+      studentRollNo: new RegExp(`^${cleanRollNo}$`, 'i'), // case-insensitive match
+      isbn: cleanIsbn,
+      returnDate: null
+    });
+
     if (!transaction) {
       return res.status(404).json({ message: 'Transaction not found or book already returned' });
     }
 
-    // Set the returnDate to the current date
+    // Update the returnDate
     transaction.returnDate = new Date();
 
-    // Calculate the fine if the book is overdue
-    const currentDate = new Date();
-    const dueDate = new Date(transaction.dueDate);
-    let fine = 0;
-
-    if (currentDate > dueDate) {
-      const overdueDays = Math.ceil((currentDate - dueDate) / (1000 * 60 * 60 * 24)); 
-      fine = overdueDays * 5; // fine rate of 5 per day
+    // Calculate fine if overdue
+    const today = new Date();
+    if (today > transaction.dueDate) {
+      const daysOverdue = Math.ceil((today - transaction.dueDate) / (1000 * 60 * 60 * 24));
+      transaction.fine = daysOverdue * 10; // ₹10 per day fine
+    } else {
+      transaction.fine = 0;
     }
 
-    // Update fine
-    transaction.fine = fine;
-
-    // Save the updated transaction
     await transaction.save();
+    console.log('Transaction updated (book returned):', transaction);
 
- // ➡️ Correct Part: Update the User's borrowedBooks returnDate
-const user = await User.findOne({ rollNo });
-if (user) {
-  const borrowedBook = user.borrowedBooks.find(entry => entry.book.isbn === isbn && entry.returnDate === null);
-  if (borrowedBook) {
-    borrowedBook.returnDate = new Date();  // Same as transaction return date
-    await user.save();  // Save the user document
-  }
-}
-
-
-    // Update the availableCopies of the book
-    const book = await Book.findOne({ isbn });
+    // Increase availableCopies for the book
+    const book = await Book.findOne({ isbn: cleanIsbn });
     if (book) {
-      book.availableCopies += 1; // Increment availableCopies since the book is returned
+      book.availableCopies += 1;
       await book.save();
     }
 
-    // Send the response
-    res.status(200).json({
-      message: 'Book returned successfully',
-      transaction
-    });
+    // Remove the returned book from student's borrowedBooks
+    const student = await User.findOne({ rollNo: new RegExp(`^${cleanRollNo}$`, 'i') });
+    if (student) {
+      student.borrowedBooks = student.borrowedBooks.filter(b => b.isbn !== cleanIsbn);
+      await student.save();
+      console.log('Student borrowedBooks updated:', student.borrowedBooks);
+    }
+
+    res.status(200).json({ message: 'Book returned successfully', transaction });
 
   } catch (error) {
-    console.error(error);
+    console.error('Error in returnBook:', error);
     res.status(500).json({ message: 'Error returning book', error });
   }
 };
+
+
+
 
 
 

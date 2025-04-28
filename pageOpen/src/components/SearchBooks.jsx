@@ -7,6 +7,7 @@
 //   const [books, setBooks] = useState([]);
 //   const [searchTerm, setSearchTerm] = useState('');
 //   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+//   const [userRole, setUserRole] = useState(''); // Will be either 'student' or 'admin'
 
 //   // Debounce logic
 //   useEffect(() => {
@@ -17,12 +18,22 @@
 //     return () => clearTimeout(timer); // Cleanup on re-typing
 //   }, [searchTerm]);
 
+//   // Check if user is logged in and their role (student or admin)
+//   useEffect(() => {
+//     const role = localStorage.getItem('role'); // Assuming role is stored in localStorage
+//     setUserRole(role);
+//   }, []);
+
 //   // Fetch books when debounced term changes
 //   useEffect(() => {
 //     const fetchBooks = async (query = '') => {
 //       try {
 //         const url = query
-//           ? `http://localhost:5000/student/search?query=${encodeURIComponent(query)}`
+//           ? userRole === 'admin'
+//             ? `http://localhost:5000/admin/search?query=${encodeURIComponent(query)}`
+//             : `http://localhost:5000/student/search?query=${encodeURIComponent(query)}`
+//           : userRole === 'admin'
+//           ? `http://localhost:5000/admin/search`
 //           : `http://localhost:5000/student/search`;
 
 //         const token = localStorage.getItem('token');
@@ -42,7 +53,7 @@
 //     };
 
 //     fetchBooks(debouncedSearchTerm);
-//   }, [debouncedSearchTerm]);
+//   }, [debouncedSearchTerm, userRole]);
 
 //   return (
 //     <div className="min-h-screen bg-gradient-to-r from-indigo-50 via-indigo-100 to-indigo-200 p-8">
@@ -98,6 +109,8 @@
 // };
 
 // export default SearchBooks;
+
+
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
@@ -155,8 +168,8 @@ const SearchBooks = () => {
   }, [debouncedSearchTerm, userRole]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-indigo-50 via-indigo-100 to-indigo-200 p-8">
-      <h2 className="text-4xl font-bold text-center text-indigo-800 mb-12">
+    <div className="min-h-screen bg-gradient-to-r from-green-400 via-green-500 to-green-600 p-8">
+      <h2 className="text-4xl font-bold text-center text-white mb-12">
         📚 Search Books
       </h2>
 
@@ -166,7 +179,7 @@ const SearchBooks = () => {
           placeholder="Search by title, author, genre..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border-2 border-indigo-300 px-6 py-3 rounded-xl text-gray-700 w-80 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300 ease-in-out"
+          className="border-2 border-green-300 px-6 py-3 rounded-xl text-gray-800 w-80 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300 ease-in-out"
         />
       </div>
 
@@ -181,7 +194,7 @@ const SearchBooks = () => {
               key={book._id}
               className="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
             >
-              <h3 className="text-2xl font-semibold text-indigo-600 mb-3">
+              <h3 className="text-2xl font-semibold text-green-600 mb-3">
                 {book.title}
               </h3>
               <p className="text-gray-600">

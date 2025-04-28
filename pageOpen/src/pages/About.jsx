@@ -2,6 +2,9 @@ import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Navbar from "../compo/Navbar";
+import bookShelves from '../assets/book-shelves.jpg'; 
+ // Adjust the path if necessary
+
 import Footer from "../compo/Footer";
 
 export default function About() {
@@ -15,7 +18,9 @@ export default function About() {
 
       {/* Parallax Hero Section */}
       <div className="relative h-[60vh] bg-fixed bg-center bg-cover flex items-center justify-center text-white px-4"
-        style={{ backgroundImage: "url('src/assets/book-shelves.webp')" }}
+        // style={{ backgroundImage: "url('src/assets/book-shelves.webp')" }}
+        style={{ backgroundImage: `url(${bookShelves})` }}
+
       >
         <div className="bg-black bg-opacity-50 p-8 rounded-xl shadow-lg">
           <h1 className="text-4xl sm:text-5xl font-bold font-serif drop-shadow-xl">
